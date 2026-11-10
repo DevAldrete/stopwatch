@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="slate">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precision Chronometer</title>
+  
+  <!-- Modern Monospace & UI Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Alpine.js Core (deferred) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+  <style>
+    /* CSS Theme Definitions & Design Tokens */
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --transition-theme: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                          color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                          border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                          box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 1. Deep Slate Theme */
+    [data-theme="slate"] {
+      --bg-body: #0b0f19;
+      --bg-card: #111827;
+      --bg-surface: #1e293b;
+      --bg-surface-elevated: #283548;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(6, 182, 212, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-faint: #475569;
+      --accent: #06b6d4;
+      --accent-hover: #22d3ee;
+      --accent-glow: rgba(6, 182, 212, 0.25);
+      --accent-contrast: #032029;
+      --status-active: #06b6d4;
+      --status-paused: #f59e0b;
+      --status-idle: #64748b;
+      --fastest: #10b981;
+      --fastest-bg: rgba(16, 185, 129, 0.12);
+      --slowest: #f43f5e;
+      --slowest-bg: rgba(244, 63, 94, 0.12);
+      --card-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    /* 2. OLED Midnight Theme */
+    [data-theme="oled"] {
+      --bg-body: #000000;
+      --bg-card: #09090b;
+      --bg-surface: #141417;
+      --bg-surface-elevated: #202024;
+      --border-subtle: rgba(255, 255, 255, 0.12);
+      --border-focus: rgba(245, 158, 11, 0.45);
+      --text-main: #ffffff;
+      --text-muted: #a1a1aa;
+      --text-faint: #52525b;
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --accent-glow: rgba(245, 158, 11, 0.28);
+      --accent-contrast: #1a0d00;
+      --status-active: #f59e0b;
+      --status-paused: #fbbf24;
+      --status-idle: #52525b;
+      --fastest: #22c55e;
+      --fastest-bg: rgba(34, 197, 94, 0.14);
+      --slowest: #ef4444;
+      --slowest-bg: rgba(239, 68, 68, 0.14);
+      --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 30px 70px rgba(0, 0, 0, 0.95);
+    }
+
+    /* 3. Nord Frost Theme */
+    [data-theme="nord"] {
+      --bg-body: #242933;
+      --bg-card: #2e3440;
+      --bg-surface: #3b4252;
+      --bg-surface-elevated: #434c5e;
+      --border-subtle: rgba(216, 222, 233, 0.12);
+      --border-focus: rgba(136, 192, 208, 0.4);
+      --text-main: #eceff4;
+      --text-muted: #d8dee9;
+      --text-faint: #79869e;
+      --accent: #88c0d0;
+      --accent-hover: #8fbcbb;
+      --accent-glow: rgba(136, 192, 208, 0.22);
+      --accent-contrast: #1e2430;
+      --status-active: #88c0d0;
+      --status-paused: #ebcb8b;
+      --status-idle: #4c566a;
+      --fastest: #a3be8c;
+      --fastest-bg: rgba(163, 190, 140, 0.16);
+      --slowest: #bf616a;
+      --slowest-bg: rgba(191, 97, 106, 0.16);
+      --card-shadow: 0 25px 60px -15px rgba(15, 17, 26, 0.5), 0 0 0 1px rgba(216, 222, 233, 0.08);
+    }
+
+    /* 4. Warm Paper / Minimal Light Theme */
+    [data-theme="paper"] {
+      --bg-body: #f4f3ef;
+      --bg-card: #ffffff;
+      --bg-surface: #f9f9f7;
+      --bg-surface-elevated: #eeeeea;
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-focus: rgba(15, 23, 42, 0.25);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+      --accent: #0f172a;
+      --accent-hover: #334155;
+      --accent-glow: rgba(15, 23, 42, 0.12);
+      --accent-contrast: #ffffff;
+      --status-active: #0284c7;
+      --status-paused: #d97706;
+      --status-idle: #94a3b8;
+      --fastest: #059669;
+      --fastest-bg: rgba(5, 150, 105, 0.1);
+      --slowest: #e11d48;
+      --slowest-bg: rgba(225, 29, 72, 0.1);
+      --card-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Reset and Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      transition: var(--transition-theme);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Main Container Card */
+    .chronometer-card {
+      width: 100%;
+      max-width: 500px;
+      background-color: var(--bg-card);
+      border-radius: 28px;
+      padding: 2rem 1.75rem;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-subtle);
+      transition: var(--transition-theme);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Top Bar: Title, Theme Selector & Mute Toggle */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      gap: 0.75rem;
+    }
+
+    .app-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      color: var(--accent);
+      transition: color 0.3s ease;
+    }
+
+    .app-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-icon-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .action-icon-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-focus);
+    }
+
+    /* Theme Selector Dropdown */
+    .theme-selector {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.35rem 0.65rem;
+      border-radius: 10px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .theme-selector:focus {
+      border-color: var(--accent);
+    }
+
+    /* Status Indicator Badge */
+    .status-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      transition: all 0.25s ease;
+    }
+
+    .status-dot-wrapper {
+      position: relative;
+      width: 8px;
+      height: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--status-idle);
+      transition: background-color 0.3s ease;
+    }
+
+    .status-ping {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--status-active);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .status-active .status-dot {
+      background-color: var(--status-active);
+    }
+
+    .status-active .status-ping {
+      animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+
+    .status-paused .status-dot {
+      background-color: var(--status-paused);
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.6);
+        opacity: 0.8;
+      }
+      70%, 100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    /* Main Digital Chrono Display */
+    .display-screen {
+      background-color: var(--bg-surface);
+      border-radius: 20px;
+      padding: 1.85rem 1rem;
+      margin-bottom: 1.75rem;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: var(--transition-theme);
+    }
+
+    .digits-row {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums lining-nums;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .time-major {
+      font-size: clamp(2.35rem, 7.5vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .time-separator {
+      color: var(--text-faint);
+      margin: 0 0.15rem;
+      font-weight: 400;
+    }
+
+    .time-minor {
+      font-size: clamp(1.4rem, 4.5vw, 1.95rem);
+      font-weight: 600;
+      color: var(--accent);
+      margin-left: 0.25rem;
+    }
+
+    .labels-row {
+      display: flex;
+      width: 100%;
+      max-width: 320px;
+      justify-content: space-around;
+      margin-top: 0.75rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 0 0.5rem;
+    }
+
+    /* Controls Grid */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 16px;
+      padding: 0.95rem 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1),
+                  background-color 0.2s ease,
+                  box-shadow 0.2s ease,
+                  border-color 0.2s ease,
+                  opacity 0.2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Primary Start / Pause Button */
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--accent-contrast);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    /* Secondary Lap & Reset Buttons */
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--bg-surface-elevated);
+      border-color: var(--border-focus);
+    }
+
+    .btn-secondary.danger:hover:not(:disabled) {
+      border-color: var(--slowest);
+      color: var(--slowest);
+    }
+
+    .btn-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Laps Section */
+    .laps-container {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .laps-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .laps-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-text-action {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .btn-text-action:hover {
+      color: var(--text-main);
+      background: var(--bg-surface);
+    }
+
+    .laps-scroll {
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    /* Custom Modern Scrollbar */
+    .laps-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .laps-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .laps-scroll::-webkit-scrollbar-thumb {
+      background-color: var(--border-subtle);
+      border-radius: 10px;
+    }
+    .laps-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: var(--text-faint);
+    }
+
+    /* Individual Lap Row */
+    .lap-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.85rem;
+      border-radius: 12px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      animation: lapSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes lapSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .lap-identity {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .lap-tag {
+      font-family: var(--font-sans);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+    }
+
+    .lap-tag.fastest {
+      background-color: var(--fastest-bg);
+      color: var(--fastest);
+    }
+
+    .lap-tag.slowest {
+      background-color: var(--slowest-bg);
+      color: var(--slowest);
+    }
+
+    .lap-time-split {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .lap-overall-time {
+      color: var(--text-faint);
+      font-size: 0.78rem;
+    }
+
+    /* Empty State */
+    .laps-empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-faint);
+      font-size: 0.84rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .empty-icon {
+      width: 28px;
+      height: 28px;
+      opacity: 0.4;
+      stroke-width: 1.5;
+    }
+
+    /* Keyboard Shortcuts Legend */
+    .keyboard-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.15rem;
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-faint);
+    }
+
+    .kbd-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    kbd {
+      font-family: var(--font-mono);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 0.15rem 0.35rem;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Toast Notification for Copy/Feedback */
+    .toast-container {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--text-main);
+      color: var(--bg-card);
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: 9999px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      pointer-events: none;
+      z-index: 100;
+      animation: toastFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes toastFade {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 440px) {
+      .chronometer-card {
+        padding: 1.5rem 1.15rem;
+        border-radius: 22px;
+      }
+      .controls-grid {
+        gap: 0.5rem;
+      }
+      .btn {
+        padding: 0.85rem 0.35rem;
+        font-size: 0.82rem;
+      }
+    }
+  </style>
+</head>
+<body x-data="chronometer()" @keydown.window="handleKeyDown($event)">
+
+  <!-- Main Chronometer Card -->
+  <main class="chronometer-card" role="region" aria-label="Precision Chronometer">
+    
+    <!-- Mini Toast Feedback (Copy notification) -->
+    <template x-if="toastMessage">
+      <div class="toast-container" x-text="toastMessage" role="status"></div>
+    </template>
+
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="app-title-group">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 6 12 12 15 15"/>
+          <line x1="12" y1="3" x2="12" y2="1"/>
+        </svg>
+        <span class="app-title">Precision</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Sound Effect Toggle -->
+        <button type="button" 
+                class="action-icon-btn" 
+                :title="soundEnabled ? 'Mute micro-audio' : 'Enable micro-audio'" 
+                :aria-label="soundEnabled ? 'Mute audio' : 'Enable audio'"
+                @click="soundEnabled = !soundEnabled">
+          <template x-if="soundEnabled">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </template>
+          <template x-if="!soundEnabled">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </template>
+        </button>
+
+        <!-- Theme Picker -->
+        <select class="theme-selector" x-model="theme" aria-label="Select Theme">
+          <option value="slate">Deep Slate</option>
+          <option value="oled">OLED Midnight</option>
+          <option value="nord">Nord Frost</option>
+          <option value="paper">Warm Paper</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Operational State Indicator -->
+    <div class="status-container">
+      <div class="status-badge" 
+           :class="{ 
+             'status-active': running, 
+             'status-paused': !running && currentTime > 0 
+           }">
+        <span class="status-dot-wrapper">
+          <span class="status-ping"></span>
+          <span class="status-dot"></span>
+        </span>
+        <span x-text="running ? 'Tracking' : (currentTime > 0 ? 'Paused' : 'Ready')"></span>
+      </div>
+    </div>
+
+    <!-- Main High-Precision Time Display -->
+    <section class="display-screen" aria-live="off">
+      <div class="digits-row">
+        <!-- Main Hours : Minutes : Seconds -->
+        <span class="time-major" x-text="timeParts.hours + ':' + timeParts.minutes + ':' + timeParts.seconds">00:00:00</span>
+        <!-- Fractional Milliseconds / Hundredths -->
+        <span class="time-minor">.<span x-text="timeParts.hundredths">00</span></span>
+      </div>
+      <div class="labels-row" aria-hidden="true">
+        <span>Hr</span>
+        <span>Min</span>
+        <span>Sec</span>
+        <span>Ms</span>
+      </div>
+    </section>
+
+    <!-- Primary Control Actions -->
+    <section class="controls-grid" aria-label="Chronometer Controls">
+      <!-- Lap Button -->
+      <button type="button" 
+              class="btn btn-secondary" 
+              @click="recordLap()" 
+              :disabled="!running" 
+              title="Record lap (L)">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+          <line x1="4" y1="22" x2="4" y2="15"></line>
+        </svg>
+        <span>Lap</span>
+      </button>
+
+      <!-- Start / Pause Toggle Button -->
+      <button type="button" 
+              class="btn btn-primary" 
+              @click="toggleStartPause()" 
+              :title="running ? 'Pause (Space)' : 'Start (Space)'">
+        <template x-if="!running">
+          <span style="display:inline-flex; align-items:center; gap:0.45rem;">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span x-text="currentTime > 0 ? 'Resume' : 'Start'">Start</span>
+          </span>
+        </template>
+        <template x-if="running">
+          <span style="display:inline-flex; align-items:center; gap:0.45rem;">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+              <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+            </svg>
+            <span>Pause</span>
+          </span>
+        </template>
+      </button>
+
+      <!-- Reset Button -->
+      <button type="button" 
+              class="btn btn-secondary danger" 
+              @click="resetChronometer()" 
+              :disabled="currentTime === 0 && laps.length === 0" 
+              title="Reset (R)">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+        <span>Reset</span>
+      </button>
+    </section>
+
+    <!-- Lap History Area -->
+    <section class="laps-container" aria-label="Lap Splits">
+      <div class="laps-header">
+        <span>Laps (<span x-text="laps.length">0</span>)</span>
+        
+        <div class="laps-actions" x-show="laps.length > 0">
+          <button type="button" class="btn-text-action" @click="copyLaps()" title="Copy splits to clipboard">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+          <button type="button" class="btn-text-action" @click="clearLaps()" title="Clear lap history">
+            <span>Clear</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Laps List -->
+      <div class="laps-scroll" x-show="laps.length > 0">
+        <template x-for="item in laps" :key="item.id">
+          <div class="lap-row">
+            <!-- Lap Identifier & Extreme Badges -->
+            <div class="lap-identity">
+              <span x-text="'Lap ' + String(item.id).padStart(2, '0')"></span>
+              <template x-if="item.id === fastestLapId">
+                <span class="lap-tag fastest">Fastest</span>
+              </template>
+              <template x-if="item.id === slowestLapId">
+                <span class="lap-tag slowest">Slowest</span>
+              </template>
+            </div>
+
+            <!-- Lap Duration & Overall Elapsed -->
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem;">
+              <span class="lap-time-split" x-text="'+' + formatLapTime(item.lapTime)"></span>
+              <span class="lap-overall-time" x-text="formatLapTime(item.overallTime)"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Empty State -->
+      <div class="laps-empty" x-show="laps.length === 0">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>No laps logged yet. Press <strong>Lap</strong> while running.</span>
+      </div>
+    </section>
+
+    <!-- Keyboard Shortcuts Legend -->
+    <footer class="keyboard-legend">
+      <div class="kbd-item"><kbd>Space</kbd> Start / Pause</div>
+      <div class="kbd-item"><kbd>L</kbd> Lap</div>
+      <div class="kbd-item"><kbd>R</kbd> Reset</div>
+    </footer>
+  </main>
+
+  <script>
+    /**
+     * Precision Chronometer Component Logic
+     * Uses performance.now() delta timing to prevent setInterval skew and background throttling.
+     */
+    function chronometer() {
+      return {
+        // Theme & Preferences
+        theme: localStorage.getItem('chrono_pref_theme') || 'slate',
+        soundEnabled: true,
+        toastMessage: '',
+        toastTimeout: null,
+
+        // High-Precision Timing State
+        running: false,
+        startTime: 0,
+        accumulatedTime: 0,
+        currentTime: 0,
+        rafHandle: null,
+
+        // Laps State
+        laps: [],
+        lastLapAnchorTime: 0,
+
+        init() {
+          // Sync theme attribute with document root
+          document.documentElement.setAttribute('data-theme', this.theme);
+          this.$watch('theme', val => {
+            document.documentElement.setAttribute('data-theme', val);
+            localStorage.setItem('chrono_pref_theme', val);
+          });
+        },
+
+        // Parsed Time Components for Display (HH, MM, SS, Hundredths)
+        get timeParts() {
+          const totalMs = Math.floor(this.currentTime);
+          const hours = Math.floor(totalMs / 3600000);
+          const minutes = Math.floor((totalMs % 3600000) / 60000);
+          const seconds = Math.floor((totalMs % 60000) / 1000);
+          const hundredths = Math.floor((totalMs % 1000) / 10);
+
+          const pad = (n) => String(n).padStart(2, '0');
+          return {
+            hours: pad(hours),
+            minutes: pad(minutes),
+            seconds: pad(seconds),
+            hundredths: pad(hundredths)
+          };
+        },
+
+        // Identifier of the fastest recorded lap (minimum duration)
+        get fastestLapId() {
+          if (this.laps.length < 2) return null;
+          const minDuration = Math.min(...this.laps.map(l => l.lapTime));
+          const match = this.laps.find(l => l.lapTime === minDuration);
+          return match ? match.id : null;
+        },
+
+        // Identifier of the slowest recorded lap (maximum duration)
+        get slowestLapId() {
+          if (this.laps.length < 2) return null;
+          const maxDuration = Math.max(...this.laps.map(l => l.lapTime));
+          const minDuration = Math.min(...this.laps.map(l => l.lapTime));
+          // Avoid labeling when all recorded laps have exact same duration
+          if (maxDuration === minDuration) return null;
+          const match = this.laps.find(l => l.lapTime === maxDuration);
+          return match ? match.id : null;
+        },
+
+        // Start / Resume Chronometer
+        start() {
+          if (this.running) return;
+          this.triggerBeep('start');
+          this.running = true;
+          this.startTime = performance.now();
+
+          const step = (timestamp) => {
+            this.currentTime = this.accumulatedTime + (timestamp - this.startTime);
+            this.rafHandle = requestAnimationFrame(step);
+          };
+
+          this.rafHandle = requestAnimationFrame(step);
+        },
+
+        // Pause Chronometer
+        pause() {
+          if (!this.running) return;
+          this.triggerBeep('pause');
+          this.running = false;
+          cancelAnimationFrame(this.rafHandle);
+          this.accumulatedTime = this.currentTime;
+        },
+
+        // Toggle Start / Pause
+        toggleStartPause() {
+          if (this.running) {
+            this.pause();
+          } else {
+            this.start();
+          }
+        },
+
+        // Record a new Lap
+        recordLap() {
+          if (!this.running) return;
+          this.triggerBeep('lap');
+
+          const currentElapsed = this.currentTime;
+          const lapDuration = currentElapsed - this.lastLapAnchorTime;
+          this.lastLapAnchorTime = currentElapsed;
+
+          // Next lap index is 1-based sequential
+          const nextLapId = this.laps.length + 1;
+
+          // Insert at top of list
+          this.laps.unshift({
+            id: nextLapId,
+            lapTime: lapDuration,
+            overallTime: currentElapsed
+          });
+        },
+
+        // Reset Chronometer to Zero
+        resetChronometer() {
+          if (this.currentTime === 0 && this.laps.length === 0) return;
+          this.triggerBeep('reset');
+
+          this.running = false;
+          cancelAnimationFrame(this.rafHandle);
+          this.startTime = 0;
+          this.accumulatedTime = 0;
+          this.currentTime = 0;
+          this.lastLapAnchorTime = 0;
+          this.laps = [];
+        },
+
+        // Clear only the recorded laps
+        clearLaps() {
+          this.laps = [];
+          this.lastLapAnchorTime = this.currentTime;
+          this.showToast('Lap history cleared');
+        },
+
+        // Format milliseconds to clean digital notation
+        formatLapTime(ms) {
+          const totalMs = Math.floor(ms);
+          const hours = Math.floor(totalMs / 3600000);
+          const minutes = Math.floor((totalMs % 3600000) / 60000);
+          const seconds = Math.floor((totalMs % 60000) / 1000);
+          const hundredths = Math.floor((totalMs % 1000) / 10);
+
+          const pad = (n) => String(n).padStart(2, '0');
+          if (hours > 0) {
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(hundredths)}`;
+          }
+          return `${pad(minutes)}:${pad(seconds)}.${pad(hundredths)}`;
+        },
+
+        // Copy laps to clipboard formatted as plaintext
+        copyLaps() {
+          if (this.laps.length === 0) return;
+          
+          let report = `CHRONOMETER SPLITS REPORT\n`;
+          report += `Total Elapsed: ${this.formatLapTime(this.currentTime)}\n`;
+          report += `------------------------------------\n`;
+          
+          // Export in chronological order (Lap 1, Lap 2...)
+          const chronologicalLaps = [...this.laps].reverse();
+          chronologicalLaps.forEach(lap => {
+            let tag = '';
+            if (lap.id === this.fastestLapId) tag = ' [FASTEST]';
+            if (lap.id === this.slowestLapId) tag = ' [SLOWEST]';
+            report += `Lap ${String(lap.id).padStart(2, '0')}: +${this.formatLapTime(lap.lapTime)} | Total: ${this.formatLapTime(lap.overallTime)}${tag}\n`;
+          });
+
+          // Use execCommand('copy') for guaranteed compatibility within preview frames
+          const textarea = document.createElement('textarea');
+          textarea.value = report;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            this.showToast('Laps copied to clipboard');
+          } catch (err) {
+            this.showToast('Could not copy laps');
+          }
+          document.body.removeChild(textarea);
+        },
+
+        // Non-intrusive Toast Banner
+        showToast(msg) {
+          this.toastMessage = msg;
+          if (this.toastTimeout) clearTimeout(this.toastTimeout);
+          this.toastTimeout = setTimeout(() => {
+            this.toastMessage = '';
+          }, 2200);
+        },
+
+        // Global Keyboard Shortcut Handler
+        handleKeyDown(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+            return;
+          }
+
+          if (e.code === 'Space') {
+            e.preventDefault();
+            this.toggleStartPause();
+          } else if (e.key === 'l' || e.key === 'L') {
+            e.preventDefault();
+            if (this.running) this.recordLap();
+          } else if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            this.resetChronometer();
+          }
+        },
+
+        // Subtle Synthesized Micro-Interactions (Web Audio API)
+        triggerBeep(type) {
+          if (!this.soundEnabled) return;
+          try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            const now = ctx.currentTime;
+
+            if (type === 'start') {
+              osc.frequency.setValueAtTime(560, now);
+              osc.frequency.exponentialRampToValueAtTime(840, now + 0.06);
+              gain.gain.setValueAtTime(0.04, now);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+              osc.start(now);
+              osc.stop(now + 0.06);
+            } else if (type === 'pause') {
+              osc.frequency.setValueAtTime(780, now);
+              osc.frequency.exponentialRampToValueAtTime(420, now + 0.06);
+              gain.gain.setValueAtTime(0.04, now);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+              osc.start(now);
+              osc.stop(now + 0.06);
+            } else if (type === 'lap') {
+              osc.frequency.setValueAtTime(920, now);
+              gain.gain.setValueAtTime(0.035, now);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+              osc.start(now);
+              osc.stop(now + 0.045);
+            } else if (type === 'reset') {
+              osc.frequency.setValueAtTime(320, now);
+              gain.gain.setValueAtTime(0.04, now);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+              osc.start(now);
+              osc.stop(now + 0.08);
+            }
+          } catch (err) {
+            // Audio context restrictions gracefully handled
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
